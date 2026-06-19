@@ -58,6 +58,7 @@ audio-deepfake-detector/
 ├── requirements.txt      # Production environment dependencies
 └── README.md             # Project technical documentation
 
+---
 
 #### Virtual Environment & Dependency Installation
 
