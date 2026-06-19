@@ -56,3 +56,30 @@ audio-deepfake-detector/
 ├── run_pipeline.py       # Orchestration execution script for end-to-end data processing
 ├── requirements.txt      # Production environment dependencies
 └── README.md             # Project technical documentation
+
+
+
+
+
+---
+
+
+
+#### Virtual Environment & Dependency Installation
+
+**Create and source environment**
+python3 -m venv venv
+source venv/bin/activate
+
+**Install dependencies**
+pip install -r requirements.txt
+
+**Execute the full optimization loop, multi-view inference pass, and biometric safety audit:**
+python3 run_pipeline.py
+
+**Strategic Remediation Optimization Roadmap**
+To reduce global error rates and drive the demographic MAD disparity score closer to 0.0000, three main optimization paths will be introduced:
+
+- InfoNCE Contrastive Realignment: Applying a demographic-supervised contrastive loss to explicitly separate speaker identity variations from synthetic cloning traces.
+- Learnable Layer Selection Weighting: Shifting from fixed layer selection to trainable attention weights across all XLS-R hidden states to automatically capture subtle quantization artifacts
+- Spectro-Temporal Graph Integration: Incorporating an explicit physical signal monitoring layer via an SSL-AASIST graph model to balance the foundation network representations.
