@@ -38,26 +38,25 @@ Demographic Bias Disparity Score (MAD): 0.0889
 *Algorithmic Audit Analysis*: While the system achieves an improved EER of 30.0% on the Obama and Sanders vocal profiles, performance deteriorates to a random-guess threshold of 50.0% on the Trump profile. This variance generates a Mean Absolute Deviation (MAD) score of 0.0889. This indicates a clear demographic footprint bias, showing that the underlying feature extractors over-index on certain idiosyncratic speech patterns, mistaking voice cloning anomalies for natural vocal variations.
 
 #### Repository Blueprint
+## 📦 Repository Architecture & Directory Structure
 
-'''text
-
+```text
 audio-deepfake-detector/
 │
-├── config.py                 # Hyperparameters, feature dimensions, and layer selection maps
-├── dataset.py                # Dataset wrapper with dynamic 16kHz resampling and clip standardization
+├── config.py             # Hyperparameters, feature dimensions, and layer selection maps
+├── dataset.py            # Dataset wrapper with dynamic 16kHz resampling and clip standardization
 │
-├── models/                   # Modular neural network architectures
-│   ├── __init__.py           # Makes models a package directory
-│   ├── whisper_feature.py    # Semantic View (Whisper Hidden States)
-│   ├── xlsr_sls.py           # Structural/Quantization View (XLS-R + Sensitive Layer Selection)
-│   └── ensemble.py           # Multi-View Stacking Ensemble Classifier Head
+├── models/               # Modular neural network architectures
+│   ├── __init__.py       # Makes models a package directory
+│   ├── whisper_feature.py# Semantic View (Whisper Hidden States)
+│   ├── xlsr_sls.py       # Structural/Quantization View (XLS-R + Sensitive Layer Selection)
+│   └── ensemble.py       # Multi-View Stacking Ensemble Classifier Head
 │
-├── train.py                  # Multi-view training module with frozen feature extraction backbones
-├── evaluate.py               # Forensic audit engine computing global/group EER and demographic MAD
-├── run_pipeline.py           # Orchestration execution script for end-to-end data processing
-├── requirements.txt          # Production environment dependencies
-└── README.md                 # Project technical documentation
-
+├── train.py              # Multi-view training module with frozen feature extraction backbones
+├── evaluate.py           # Forensic audit engine computing global/group EER and demographic MAD
+├── run_pipeline.py       # Orchestration execution script for end-to-end data processing
+├── requirements.txt      # Production environment dependencies
+└── README.md             # Project technical documentation
 
 
 #### Virtual Environment & Dependency Installation
