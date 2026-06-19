@@ -37,8 +37,7 @@ Demographic Bias Disparity Score (MAD): 0.0889
 
 *Algorithmic Audit Analysis*: While the system achieves an improved EER of 30.0% on the Obama and Sanders vocal profiles, performance deteriorates to a random-guess threshold of 50.0% on the Trump profile. This variance generates a Mean Absolute Deviation (MAD) score of 0.0889. This indicates a clear demographic footprint bias, showing that the underlying feature extractors over-index on certain idiosyncratic speech patterns, mistaking voice cloning anomalies for natural vocal variations.
 
-#### Repository Blueprint
-## 📦 Repository Architecture & Directory Structure
+#### Repository Architecture & Directory Structure
 
 ```text
 audio-deepfake-detector/
