@@ -1,85 +1,100 @@
-### Deepfake Audio Detection
+# Deepfake Audio Detection
 
-Modern audio deepfake vulnerabilities have evolved past the artifacts left by traditional neural vocoders. Present-day threats leverage discrete neural codecs and non-autoregressive flow-matching algorithms, blurring the perceptual boundaries between authentic and synthetic human voices. Concurrently, biometric defense networks often exhibit high error variance across different demographic groups and individual speaker identities, frequently misinterpreting regional or stylistic vocal variations as structural cloning anomalies. 
+This repository implements an end-to-end multi-view audio deepfake detection pipeline designed for advanced TTS and voice cloning attacks. It combines semantic and structural feature extractors with an ensemble classifier and includes a demographic bias audit.
 
-An end-to-end multi-view (ensemble) audio deepfake detection system optimized to identify advanced text-to-speech (TTS) architectures and voice cloning attacks. This project implements a dual-view feature extractor (Linguistic/Semantic hidden states mixed with Structural/Quantization deep states) and conducts a data-driven demographic safety audit inspired by UC Berkeley’s FairVoice framework.
+## Overview
 
-Traditional spoofing classifiers fail against modern speech foundation models because they over-index on low-level acoustic artifacts from legacy vocoders. Advanced text-to-speech architectures leverage discrete neural codecs and non-autoregressive flow-matching algorithms, allowing cloned voices to bridge the perceptual boundary of real speech.
+Modern audio deepfake attacks often use discrete neural codecs and non-autoregressive flow matching, which weakens the effectiveness of legacy spoofing artifacts. Conventional detectors can overfit low-level acoustic cues and exhibit high variance across speakers and demographic groups.
 
-Furthermore, modern detectors exhibit high algorithmic variance across individual vocal identities—creating asymmetric false-alarm patterns on public figures. This repository implements an abstraction-fused ensembling approach to remedy the architectural generalization gap and quantifies systemic demographic disparities using the Mean Absolute Deviation (MAD) of the Equal Error Rate (EER).
+This project addresses those challenges with:
 
-#### System Architecture
-The detector processes input waveforms through parallel, frozen foundation networks to construct a multi-perspective feature space before classification.
+- Dual-view feature extraction: semantic and structural perspectives
+- Frozen foundation backbones for stronger generalization
+- A stacking ensemble classifier for binary real vs fake predictions
+- A demographic audit using Equal Error Rate (EER) and Mean Absolute Deviation (MAD)
 
-Semantic Front-End (Whisper View): I used openai/whisper-base encoder hidden states to capture contextual prosody, macro-linguistic formatting and high-level conversational semantic alignments.
+## System Architecture
 
-Structural Layer View (XLS-R SLS View): Chose facebook/wav2vec2-xls-r-300m with Sensitive Layer Selection (SLS) focused on specific mid-tier representation pools to target minute neural-codec quantization boundaries and phase-discontinuity anomalies.
+The detector extracts features from two frozen foundation models and fuses them through a learnable classification head.
 
-Stacking Ensemble Engine: Combines individual views via linear feature projection networks and channels the unified multi-view representations into a dense classification head to emit binary predictions (Real vs. Fake).
+- **Whisper View (Semantic Front-End)**
+  - Uses `openai/whisper-base` encoder hidden states
+  - Captures prosody, semantics, and high-level spoken structure
 
-#### Evaluation
+- **XLS-R SLS View (Structural Front-End)**
+  - Uses `facebook/wav2vec2-xls-r-300m`
+  - Applies Sensitive Layer Selection to mid-tier hidden states
+  - Targets codec quantization boundaries and structural signal anomalies
 
-The system was evaluated against an audio slice comprising 60 physical speaker tracks balanced equally between genuine vocals and synthetic clones.
+- **Stacking Ensemble Engine**
+  - Projects each view into a shared feature space
+  - Concatenates multi-view representations
+  - Feeds fused features into a dense binary classifier
 
-1. Global Performance Matrix
-    - Global System EER: 0.4667 (46.67%)
-    - Vulnerability Target Profile: 0.4667 Equal Error Rate against the synthetic_clone generation paradigm.
+## Evaluation
 
-2. FairVoice Demographic Bias Audit
-To quantify algorithmic equity across specific speaker profiles, separate Equal Error Rates were computed for individual target identities to assess accuracy distribution variance.
+The system was evaluated on a balanced set of 60 speaker tracks, evenly split between genuine and synthetic audio.
 
-Demographic Cohort Group	Equal Error Rate (EER)
-Bernie_Sanders	0.3
-Barack_Obama	0.3
-Donald_Trump	0.5
+- Global System EER: `0.4667` (46.67%)
+- Vulnerability profile EER: `0.4667`
 
-Demographic Bias Disparity Score (MAD): 0.0889
+### Demographic Bias Audit
 
-*Algorithmic Audit Analysis*: While the system achieves an improved EER of 30.0% on the Obama and Sanders vocal profiles, performance deteriorates to a random-guess threshold of 50.0% on the Trump profile. This variance generates a Mean Absolute Deviation (MAD) score of 0.0889. This indicates a clear demographic footprint bias, showing that the underlying feature extractors over-index on certain idiosyncratic speech patterns, mistaking voice cloning anomalies for natural vocal variations.
+Equal Error Rates were computed for individual target identities to assess fairness.
 
-#### Repository Architecture & Directory Structure
+| Speaker Profile | Equal Error Rate (EER) |
+|-----------------|------------------------|
+| Bernie_Sanders  | 0.30                   |
+| Barack_Obama    | 0.30                   |
+| Donald_Trump    | 0.50                   |
+
+- Demographic Bias Disparity Score (MAD): `0.0889`
+
+> The system performs better on some speaker profiles and degrades to near-random performance on others, creating a measurable demographic disparity.
+
+## Repository Structure
 
 ```text
-audio-deepfake-detector/
-│
-├── config.py             # Hyperparameters, feature dimensions, and layer selection maps
-├── dataset.py            # Dataset wrapper with dynamic 16kHz resampling and clip standardization
-│
-├── models/               # Modular neural network architectures
-│   ├── __init__.py       # Makes models a package directory
-│   ├── whisper_feature.py# Semantic View (Whisper Hidden States)
-│   ├── xlsr_sls.py       # Structural/Quantization View (XLS-R + Sensitive Layer Selection)
-│   └── ensemble.py       # Multi-View Stacking Ensemble Classifier Head
-│
-├── train.py              # Multi-view training module with frozen feature extraction backbones
-├── evaluate.py           # Forensic audit engine computing global/group EER and demographic MAD
-├── run_pipeline.py       # Orchestration execution script for end-to-end data processing
-├── requirements.txt      # Production environment dependencies
-└── README.md             # Project technical documentation
+audio_deepfake_detector/
+├── config.py
+├── dataset.py
+├── models/
+│   ├── __init__.py
+│   ├── whisper_feature.py
+│   ├── xlsr_sls.py
+│   └── ensemble.py
+├── train.py
+├── evaluate.py
+├── run_pipeline.py
+├── requirements.txt
+└── README.md
+```
 
+- `config.py` — hyperparameters, feature dimensions, and layer-selection maps
+- `dataset.py` — dataset wrapper with 16 kHz resampling and clip standardization
+- `models/` — semantic, structural, and ensemble model components
+- `train.py` — multi-view training with frozen feature extractors
+- `evaluate.py` — audit engine computing global/group EER and demographic MAD
+- `run_pipeline.py` — end-to-end orchestration script
 
+## Setup
 
-
-
----
-
-
-
-#### Virtual Environment & Dependency Installation
-
-**Create and source environment**
+```bash
 python3 -m venv venv
 source venv/bin/activate
-
-**Install dependencies**
 pip install -r requirements.txt
+```
 
-**Execute the full optimization loop, multi-view inference pass, and biometric safety audit:**
+## Run
+
+```bash
 python3 run_pipeline.py
+```
 
-**Strategic Remediation Optimization Roadmap**
-To reduce global error rates and drive the demographic MAD disparity score closer to 0.0000, three main optimization paths will be introduced:
+## Future Improvements
 
-- InfoNCE Contrastive Realignment: Applying a demographic-supervised contrastive loss to explicitly separate speaker identity variations from synthetic cloning traces.
-- Learnable Layer Selection Weighting: Shifting from fixed layer selection to trainable attention weights across all XLS-R hidden states to automatically capture subtle quantization artifacts
-- Spectro-Temporal Graph Integration: Incorporating an explicit physical signal monitoring layer via an SSL-AASIST graph model to balance the foundation network representations.
+Potential improvements to reduce overall error and demographic disparity:
+
+- **InfoNCE Contrastive Realignment** — separate speaker identity from synthetic artifacts using contrastive training
+- **Learnable Layer Selection Weighting** — replace fixed layer selection with trainable attention over XLS-R hidden states
+- **Spectro-Temporal Graph Integration** — add a signal-level graph model to complement foundation representations
