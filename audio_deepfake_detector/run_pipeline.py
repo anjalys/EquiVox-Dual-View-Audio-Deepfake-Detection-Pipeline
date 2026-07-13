@@ -145,7 +145,7 @@ def run_pipeline_inference(df, audio_dir, inference_engine):
 # =====================================================================
 if __name__ == "__main__":
     # ---- ASVspoof 2019 LA paths ----
-    LA_ROOT = "data"
+    LA_ROOT = "data/data"
     TRAIN_PROTOCOL = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
     DEV_PROTOCOL   = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
     EVAL_PROTOCOL  = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
