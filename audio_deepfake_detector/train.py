@@ -59,7 +59,7 @@ def train_system(train_dataset, epochs=Config.EPOCHS, alignment_lambda=Config.AL
     focus optimization on the ensemble head and projection spaces.
     The ensemble head learns to combine the two perspectives 
     """
-    train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, shuffle=True, num_workers=2)
     # val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, shuffle=False)
     
     # Initialize separate views and meta-classifier
