@@ -53,12 +53,6 @@ The system was evaluated on a balanced set of 60 speaker tracks, evenly split be
 
 Equal Error Rates were computed for individual target identities to assess fairness.
 
-| Speaker Profile | Equal Error Rate (EER) |
-|-----------------|------------------------|
-| Bernie_Sanders  | 0.30                   |
-| Barack_Obama    | 0.30                   |
-| Donald_Trump    | 0.50                   |
-
 - Demographic Bias Disparity Score (MAD): `0.0889`
 
 > The system performs better on some speaker profiles and degrades to near-random performance on others, creating a measurable demographic disparity.
