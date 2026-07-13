@@ -1,3 +1,4 @@
+import librosa
 import pandas as pd
 import os
 
@@ -30,7 +31,7 @@ class DeepfakeAudioDataset(Dataset):
         file_path = os.path.join(self.audio_dir, row['file'])
 
         # Load Raw Audio Signal
-        waveform, sr = torchaudio.load(file_path, backend="soundfile")
+        waveform, sr = torchaudio.load(file_path)
 
         # Stereo to Mono downmixing
         if waveform.shape[0] > 1:
@@ -38,8 +39,13 @@ class DeepfakeAudioDataset(Dataset):
             
         # Standardize Sample Rate Boundaries -> Resample if sample rate differs
         if sr != self.target_sr:
-            resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=self.target_sr)
-            waveform = resampler(waveform)
+            # resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=self.target_sr)
+            resampler = torchaudio.transforms.Resample(sr, self.target_sr)
+            # waveform = resampler(waveform)
+            # librosa expects numpy arrays, so convert, resample, convert back
+            audio_np = waveform.squeeze(0).numpy()
+            audio_np = librosa.resample(audio_np, orig_sr=sr, target_sr=self.target_sr)
+            waveform = torch.from_numpy(audio_np).unsqueeze(0)
         
         # Standardize clip length - Enforce Fixed Length Constraints (e.g., standardizing to 4-second chunks)
         max_len = self.target_sr * 4
