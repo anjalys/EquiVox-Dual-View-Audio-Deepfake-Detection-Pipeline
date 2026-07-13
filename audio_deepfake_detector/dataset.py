@@ -30,7 +30,7 @@ class DeepfakeAudioDataset(Dataset):
         file_path = os.path.join(self.audio_dir, row['file'])
 
         # Load Raw Audio Signal
-        waveform, sr = torchaudio.load(file_path)
+        waveform, sr = torchaudio.load(file_path, backend="soundfile")
 
         # Stereo to Mono downmixing
         if waveform.shape[0] > 1:
