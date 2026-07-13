@@ -118,3 +118,13 @@ Potential improvements to reduce overall error and demographic disparity:
 - **Per-Group Decision Thresholds** — adjust classification thresholds separately per demographic group, shown in recent literature to reduce fairness gaps significantly at no cost to overall accuracy
 - **Cross-Dataset Evaluation** — validate on additional real-world sources (e.g. In-the-Wild) to test generalization beyond the clean, studio-quality conditions of ASVspoof
   
+## Related Work
+
+This project builds on established techniques from the audio anti-spoofing literature rather than introducing novel architecture:
+- Self-supervised speech representations (Wav2Vec2, WavLM, Whisper) as frozen feature extractors for spoofing detection.
+- ASVspoof challenge series as the standard benchmark for TTS/VC attack generalization.
+- Growing research interest in fairness auditing for audio deepfake detection, including diagnosis of gender bias sources and dataset-level fairness metadata audits
+
+
+## License
+Dataset (ASVspoof 2019 LA) is distributed under the Open Data Commons Attribution License. See dataset source for full terms.
