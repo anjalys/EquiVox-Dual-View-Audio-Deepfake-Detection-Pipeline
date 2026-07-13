@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 from transformers import Wav2Vec2Model
+from config import Config
 
 class XlsrSlsExtractor(nn.Module):
-    def __init__(self, selected_layers=[4, 12, 18]):
+    def __init__(self, selected_layers=Config.SLS_LAYERS):
         super().__init__()
         self.backbone = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-xls-r-300m")
         self.selected_layers = selected_layers
@@ -11,6 +12,11 @@ class XlsrSlsExtractor(nn.Module):
             param.requires_grad = False
             
     def forward(self, x):
+        """
+        x: Tensor of shape (batch_size, time_steps)
+        Returns: Tensor of shape (batch_size, hidden_dim) representing pooled structural features.   
+        """
+        x = (x - x.mean(dim=-1, keepdim=True)) / (x.std(dim=-1, keepdim=True) + 1e-7)
         outputs = self.backbone(x, output_hidden_states=True)
         hidden_states = outputs.hidden_states
         
