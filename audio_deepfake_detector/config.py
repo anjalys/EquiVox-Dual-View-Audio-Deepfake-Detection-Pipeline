@@ -13,9 +13,9 @@ class Config:
 
     # Optimal Mac Configuration
     BACKBONE_DEVICE = torch.device("cpu")  # Extract features safely without bottlenecks
-    TRAIN_DEVICE = torch.device("mps")     # Accelerate backprop and gradients here!
+    TRAIN_DEVICE = torch.device("cuda")     # Accelerate backprop and gradients here!
     
-    DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Feature Dimensions
     WHISPER_DIM = 768  # whisper-base hidden state dimension
