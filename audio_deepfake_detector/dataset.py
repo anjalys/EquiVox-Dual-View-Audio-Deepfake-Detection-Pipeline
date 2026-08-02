@@ -69,5 +69,6 @@ class DeepfakeAudioDataset(Dataset):
             "waveform": waveform.squeeze(0),
             "label": torch.tensor(label_int, dtype=torch.long),
             "speaker": row["speaker"],
+            "attack_type": row.get("attack_type", "unknown"),
             "file_path": row["file"],
         }

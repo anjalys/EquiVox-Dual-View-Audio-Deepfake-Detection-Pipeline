@@ -10,7 +10,7 @@ from dataset import DeepfakeAudioDataset
 from config import Config
 
 from train import train_system
-from evaluate import run_forensic_and_fairness_audit
+from evaluate import run_forensic_and_fairness_audit, calculate_eer
 
 # =========================
 # CONFIG
@@ -29,8 +29,8 @@ def parse_asvspoof_protocol(protocol_path):
 
     Each protocol line looks like:
         LA_0079 LA_T_1138215 - - bonafide
-        LA_0079 LA_T_1271820 A01 - spoof
-    Columns: speaker_id, filename, attack_type, unused, label
+        LA_0079 LA_T_1004644 - A01 spoof
+    Columns: speaker_id, filename, unused, attack_type, label
     """
     rows = []
     with open(protocol_path) as f:
@@ -38,7 +38,7 @@ def parse_asvspoof_protocol(protocol_path):
             parts = line.strip().split()
             if len(parts) != 5:
                 continue  # skip malformed lines defensively
-            speaker, filename, attack_type, _, label = parts
+            speaker, filename, _, attack_type, label = parts
             rows.append({
                 "file": f"{filename}.flac",
                 "speaker": speaker,
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the EquiVox dual-view deepfake detection pipeline")
     parser.add_argument("--train-n", type=int, default=1000, help="Number of training files to sample")
     parser.add_argument("--dev-n", type=int, default=500, help="Number of dev files to sample")
-    parser.add_argument("--eval-n", type=int, default=200, help="Number of eval files to sample")
+    parser.add_argument("--eval-n", type=int, default=5000, help="Number of eval files to sample")
     parser.add_argument("--epochs", type=int, default=Config.EPOCHS, help="Number of training epochs")
     parser.add_argument("--full", action="store_true", help="Use the entire dataset for each split instead of subsampling")
     args = parser.parse_args()
@@ -217,3 +217,11 @@ if __name__ == "__main__":
 
     results_df.to_csv("pipeline_results.csv", index=False)
     print("\nSaved to pipeline_results.csv")
+
+    # 7. Generalization check: EER on the eval protocol's unseen attack types (A07-A19),
+    #    which train/dev never see (train/dev only cover A01-A06) -- this is the
+    #    metric that actually reflects real-world detector performance.
+    eval_labels = results_df["true_label"].map({"spoof": 1, "bonafide": 0})
+    eval_scores = results_df["confidence_spoof"]
+    eval_eer = calculate_eer(eval_labels, eval_scores)
+    print(f"\n=== EVAL SYSTEM EER (unseen attack types): {eval_eer:.4f} ===")
