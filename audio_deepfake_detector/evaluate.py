@@ -14,10 +14,12 @@ def calculate_eer(labels, scores):
     labels = np.array(labels)
     scores = np.array(scores)
 
-    # Handle edge cases where a sub-cohort contains only one class type
-    # if len(np.unique(labels)) < 2:
-    #     return 0.0000
-    
+    # Handle edge cases where a sub-cohort contains only one class type -- fpr/fnr
+    # are undefined without both classes present, so signal "not applicable" via NaN
+    # rather than crashing (and rather than 0.0, which would misleadingly read as perfect).
+    if len(np.unique(labels)) < 2:
+        return np.nan
+
     fpr, tpr, thresholds = roc_curve(labels, scores, pos_label=1)
     fnr = 1 - tpr
     idx = np.nanargmin(np.absolute(fpr - fnr))
@@ -82,7 +84,8 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
     # 1. GLOBAL PERFOMANCE INDEX METRICS
     # =====================================================================
     global_eer = calculate_eer(global_labels, global_scores)
-    print(f"=== GLOBAL SYSTEM EER: {global_eer:.4f} ===\n")
+    global_eer_str = f"{global_eer:.4f}" if not np.isnan(global_eer) else "N/A (single class in sample)"
+    print(f"=== GLOBAL SYSTEM EER: {global_eer_str} ===\n")
     
     # 2. Cross-Model Generalization Evaluation (Robustness Profiling)
     print("--- Cross-Model Vulnerability Profile ---")
@@ -94,7 +97,8 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
         attack_scores = [r['score'] for r in eval_results if r['attack_type'] == attack or r['label'] == 0]
         
         eer_vs_attack = calculate_eer(attack_labels, attack_scores)
-        print(f"System EER vs Generative Architecture [{attack}]: {eer_vs_attack:.4f}")
+        eer_vs_attack_str = f"{eer_vs_attack:.4f}" if not np.isnan(eer_vs_attack) else "N/A (single class in sample)"
+        print(f"System EER vs Generative Architecture [{attack}]: {eer_vs_attack_str}")
         
     # 3. Demographic Fairness Audit (The FairVoice Disparity Metric)
     print("\n--- FairVoice Demographic Equity Audit ---")
