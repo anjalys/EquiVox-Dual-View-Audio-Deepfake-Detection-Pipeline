@@ -1,6 +1,8 @@
 import os
+import librosa
 import torch
 import torchaudio
+import soundfile
 import pandas as pd
 import numpy as np
 from torch import nn
@@ -67,16 +69,22 @@ class InferenceEngine:
 
     def load_and_standardize(self, file_path):
         """Loads raw audio tracks, performs mono downmixing, and applies 16kHz sample rate targets."""
-        waveform, sr = torchaudio.load(file_path)
-
+        data, sr = soundfile.read(file_path, dtype="float32")
+        waveform = torch.from_numpy(data)
+        if waveform.dim() == 1:
+            waveform = waveform.unsqueeze(0)
+        else:
+            waveform = waveform.T
+            
         # Convert stereo matrix configurations to mono arrays
         if waveform.shape[0] > 1:
             waveform = waveform.mean(dim=0, keepdim=True)
 
         # Enforce exact sampling bounds matching your speech transformers
         if sr != self.target_sr:
-            resampler = torchaudio.transforms.Resample(sr, self.target_sr)
-            waveform = resampler(waveform)
+            audio_np = waveform.squeeze(0).numpy()
+            audio_np = librosa.resample(audio_np, orig_sr=sr, target_sr=self.target_sr)
+            waveform = torch.from_numpy(audio_np).unsqueeze(0)
 
         # Standardize structural clip dimensions to exactly 4 seconds
         max_len = self.target_sr * 4
@@ -144,8 +152,18 @@ def run_pipeline_inference(df, audio_dir, inference_engine):
 # SYSTEM PIPELINE ORCHESTRATION ENTRY POINT
 # =====================================================================
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run the EquiVox dual-view deepfake detection pipeline")
+    parser.add_argument("--train-n", type=int, default=1000, help="Number of training files to sample")
+    parser.add_argument("--dev-n", type=int, default=500, help="Number of dev files to sample")
+    parser.add_argument("--eval-n", type=int, default=200, help="Number of eval files to sample")
+    parser.add_argument("--epochs", type=int, default=Config.EPOCHS, help="Number of training epochs")
+    parser.add_argument("--full", action="store_true", help="Use the entire dataset for each split instead of subsampling")
+    args = parser.parse_args()
+
     # ---- ASVspoof 2019 LA paths ----
-    LA_ROOT = "/data/data"
+    LA_ROOT = "data"
     TRAIN_PROTOCOL = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
     DEV_PROTOCOL   = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
     EVAL_PROTOCOL  = f"{LA_ROOT}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
@@ -154,9 +172,12 @@ if __name__ == "__main__":
     DEV_AUDIO_DIR   = f"{LA_ROOT}/ASVspoof2019_LA_dev/flac"
     EVAL_AUDIO_DIR  = f"{LA_ROOT}/ASVspoof2019_LA_eval/flac"
 
+    def subsample(df, n):
+        return df if args.full else df.sample(n=min(n, len(df)), random_state=42)
+
     # 1: Parse the ASVspoof protocol files into structured DataFrames
-    train_df = parse_asvspoof_protocol(TRAIN_PROTOCOL).sample(n=5000, random_state=42)  # Subsample for quick testing
-    dev_df   = parse_asvspoof_protocol(DEV_PROTOCOL).sample(n=1000, random_state=42)      # Subsample for quick testing
+    train_df = subsample(parse_asvspoof_protocol(TRAIN_PROTOCOL), args.train_n)
+    dev_df   = subsample(parse_asvspoof_protocol(DEV_PROTOCOL), args.dev_n)
     print(f"Dataset located. Train: {len(train_df)} files | Dev: {len(dev_df)} files")
 
     # 2. ASVspoof already provides a proper non-overlapping train/dev split by
@@ -173,7 +194,7 @@ if __name__ == "__main__":
     print("\n[Phase 1] Launching Multi-View Backbone Optimizer...")
     whisper_view, xlsr_view, ensemble_detector = train_system(
         train_dataset,
-        epochs=Config.EPOCHS,
+        epochs=args.epochs,
         alignment_lambda=Config.ALIGNMENT_LAMBDA
     )
 
@@ -188,7 +209,7 @@ if __name__ == "__main__":
 
     # 6. Full inference pass + CSV export, using the eval protocol (unseen attacks)
     inference_engine = InferenceEngine(whisper_view, xlsr_view, ensemble_detector)
-    eval_df = parse_asvspoof_protocol(EVAL_PROTOCOL).sample(n=200, random_state=42)  # Subsample for quick testing
+    eval_df = subsample(parse_asvspoof_protocol(EVAL_PROTOCOL), args.eval_n)
     results_df = run_pipeline_inference(eval_df, EVAL_AUDIO_DIR, inference_engine)
 
     print("\nSample Results:")
