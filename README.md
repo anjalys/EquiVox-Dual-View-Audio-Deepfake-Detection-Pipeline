@@ -1,4 +1,4 @@
-# Deepfake Audio Detection
+# EquiVox: Dual-View Audio Deepfake Detection with Speaker Fairness Auditing
 
 This repository implements an end-to-end multi-view audio deepfake detection pipeline designed for advanced TTS and voice cloning attacks. It combines semantic and structural feature extractors with an ensemble classifier and includes a demographic bias audit.
 
