@@ -224,4 +224,5 @@ if __name__ == "__main__":
     eval_labels = results_df["true_label"].map({"spoof": 1, "bonafide": 0})
     eval_scores = results_df["confidence_spoof"]
     eval_eer = calculate_eer(eval_labels, eval_scores)
-    print(f"\n=== EVAL SYSTEM EER (unseen attack types): {eval_eer:.4f} ===")
+    eval_eer_str = f"{eval_eer:.4f}" if not np.isnan(eval_eer) else "N/A (single class in sample)"
+    print(f"\n=== EVAL SYSTEM EER (unseen attack types): {eval_eer_str} ===")
