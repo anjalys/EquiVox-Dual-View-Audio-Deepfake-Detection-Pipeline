@@ -1,7 +1,6 @@
 import os
 import librosa
 import torch
-import torchaudio
 import soundfile
 import pandas as pd
 import numpy as np
@@ -16,7 +15,6 @@ from evaluate import run_forensic_and_fairness_audit, calculate_eer
 # CONFIG
 # =========================
 TARGET_SR = 16000
-N_MELS = 64
 
 
 # =====================================================================
@@ -94,7 +92,6 @@ class InferenceEngine:
             pad_len = max_len - waveform.shape[1]
             waveform = torch.nn.functional.pad(waveform, (0, pad_len))
 
-        # Resolve device locally to avoid dependency on external Config
         return waveform.to(Config.DEVICE)
 
     def predict_spoof_vector(self, waveform):
@@ -121,8 +118,8 @@ class InferenceEngine:
 # =========================
 def run_pipeline_inference(df, audio_dir, inference_engine):
     """
-    Iterates over the entire manifest dataframe to compile real-world evaluation arrays.
-    Saves outputs alongside soft probability prediction confidence levels.
+    Iterates over the entire manifest dataframe to compile real-world evaluation arrays,
+    returning a DataFrame with predictions and soft probability confidence levels.
     """
     results = []
     print("\n[Phase 3] Deploying Advanced Multi-View Transformer Inference over Dataset...")
@@ -182,7 +179,7 @@ if __name__ == "__main__":
 
     # 2. ASVspoof already provides a proper non-overlapping train/dev split by
     #    design (different attack types in each), so no manual .sample() split
-    #    is needed here -- unlike the In-the-Wild version above.
+    #    is needed here.
     train_meta = train_df.to_dict(orient="records")
     val_meta = dev_df.to_dict(orient="records")
 

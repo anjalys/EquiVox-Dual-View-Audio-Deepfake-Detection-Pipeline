@@ -1,7 +1,6 @@
 from config import Config
 import numpy as np
 import torch
-import torchaudio
 from sklearn.metrics import roc_curve
 from torch.utils.data import DataLoader
 
@@ -30,7 +29,7 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
     """
     Performs a comprehensive forensic and fairness audit on the evaluation results.
     This function computes the global Equal Error Rate (EER), evaluates cross-model generalization
-    performance against various attack types, and conducts a demographic fairness audit based on accent groups.
+    performance against various attack types, and conducts a demographic fairness audit per speaker.
     Performs live multi-view inference over the validation partition.
     Conducts forensic vulnerability mapping and identity-fairness audits.
     """
@@ -54,7 +53,6 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
 
             # Robust extraction handling for text manifest variables without using .item()
             attack_type = batch['attack_type'][0] if 'attack_type' in batch else 'synthetic_clone'
-            accent = batch['accent'][0] if 'accent' in batch else 'unknown'
 
             # Forward pass raw audio through our multi-view pipelines
             w_feats = whisper_view(waveforms)
@@ -73,7 +71,6 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
                 'score': spoof_score,
                 'attack_type': attack_type,
                 'speaker': speaker,
-                'accent': accent,
             })
 
     # Process extracted validation space arrays

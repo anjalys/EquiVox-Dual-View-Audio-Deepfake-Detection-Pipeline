@@ -14,7 +14,7 @@ class Config:
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Feature Dimensions
-    WHISPER_DIM = 768  # whisper-base hidden state dimension
+    WHISPER_DIM = 768  # whisper-small hidden state dimension
     XLSR_DIM = 1024    # wav2vec2-xls-r-300m hidden state dimension
     
     # Selected layers for XLS-R Sensitive Layer Selection (SLS)

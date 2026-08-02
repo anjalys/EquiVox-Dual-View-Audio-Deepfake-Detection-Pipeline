@@ -59,7 +59,7 @@ class DeepfakeAudioDataset(Dataset):
             
         # Construct metadata dictionary for downstream processing
         # Clean labels to standard integers
-        raw_label = row["label"].strip().lower() if "label" in row else row["true_label"].strip().lower()
+        raw_label = row["label"].strip().lower()
 
         if raw_label not in self.label_mapping:
             raise ValueError(f"Unrecognized label: {raw_label!r} in {row['file']}")
