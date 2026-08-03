@@ -46,7 +46,7 @@ The pipeline is built and evaluated on ASVspoof 2019 LA (Logical Access track) [
 
 Trained on 1000 files (10 epochs) and evaluated on 5000 files from the eval partition, which covers 13 attack types (A07–A19) never seen during training or on the dev set.
 
-- **Eval System EER (unseen attack types): `0.0170` (1.70%)**
+- **Eval System EER (unseen attack types): `0.0208` (2.08%)**
 
 This is the metric that reflects real generalization: train/dev only cover attack types A01–A06, so this number measures performance against synthesis methods the model never trained on.
 
@@ -55,7 +55,11 @@ This is the metric that reflects real generalization: train/dev only cover attac
 Per-speaker Equal Error Rates and a Mean Absolute Deviation (MAD) disparity score are computed on both partitions:
 
 - **Dev set (known attack types A01–A06)**: the detector fits these almost perfectly, so dev-set EER and MAD read as `0.0000` across the board — expected given the setup, not a real fairness signal.
-- **Eval set (unseen attack types A07–A19)**: this is where a genuine fairness result lives, since it measures disparity under real generalization pressure rather than on attacks the model has already memorized. The audit runs automatically as part of `run_pipeline.py`, reusing the eval-set inference results from the EER calculation above (no extra forward pass). A full-scale MAD result (matching the 1000 train / 10 epoch / 5000 eval configuration above) is pending a run and will be reported here.
+- **Eval set (unseen attack types A07–A19)**: this is where the genuine fairness result lives, since it measures disparity under real generalization pressure rather than on attacks the model has already memorized. The audit reuses the eval-set inference results from the EER calculation above (no extra forward pass).
+
+  - **Demographic Bias Disparity Score (MAD): `0.0033`**, computed across ~42 speaker cohorts with sufficient bonafide/spoof balance to evaluate (the remaining ~25 of 67 eval speakers had too few bonafide samples in this 5000-file subsample to form a valid cohort and were skipped).
+  - Nearly all evaluated speaker cohorts hit EER `0.0000`; one mild outlier (speaker `LA_0041`) landed at `0.0769` (7.69%).
+  - A MAD this close to `0.00` indicates the detector performs almost uniformly across speakers on unseen attacks — a genuinely low measured disparity, not just an expected artifact of the setup (as the dev-set number above is).
 
 ## Repository Structure
 
@@ -129,8 +133,8 @@ python3 run_pipeline.py --full
 
 Concrete, already-scoped work remaining:
 
-- **Full-scale eval-set fairness audit** — the per-speaker MAD audit on unseen attack types (A07–A19) is implemented and runs automatically, but hasn't yet been executed at the same scale as the headline EER result (1000 train / 10 epochs / 5000 eval); the Demographic Bias Audit section above will be updated with that real number once it has.
 - **Full-dataset run** — validate results against the complete ASVspoof2019 LA corpus via `--full`, rather than the current subsampled configuration, for a fully rigorous, directly paper-comparable benchmark number.
+- **Recover skipped speaker cohorts** — ~25 of 67 eval speakers were skipped from the fairness audit above due to insufficient bonafide samples in the 5000-file subsample; a larger `--eval-n` or a `--full` run would let more speakers qualify for the MAD calculation.
 
 ## Future Improvements
 
