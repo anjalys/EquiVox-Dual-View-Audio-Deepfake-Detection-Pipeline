@@ -52,7 +52,10 @@ This is the metric that reflects real generalization: train/dev only cover attac
 
 ### Demographic Bias Audit
 
-Equal Error Rates are computed per speaker identity on the dev set to assess fairness. Because dev shares train's known attack types (A01–A06), the detector fits them almost perfectly, so dev-set EER and MAD scores currently read as `0.0000` across the board — expected given the setup, not yet a fairness signal. A meaningful demographic bias audit would need to run this same per-speaker breakdown against the eval partition's unseen attacks instead.
+Per-speaker Equal Error Rates and a Mean Absolute Deviation (MAD) disparity score are computed on both partitions:
+
+- **Dev set (known attack types A01–A06)**: the detector fits these almost perfectly, so dev-set EER and MAD read as `0.0000` across the board — expected given the setup, not a real fairness signal.
+- **Eval set (unseen attack types A07–A19)**: this is where a genuine fairness result lives, since it measures disparity under real generalization pressure rather than on attacks the model has already memorized. The audit runs automatically as part of `run_pipeline.py`, reusing the eval-set inference results from the EER calculation above (no extra forward pass). A full-scale MAD result (matching the 1000 train / 10 epoch / 5000 eval configuration above) is pending a run and will be reported here.
 
 ## Repository Structure
 
@@ -122,9 +125,16 @@ python3 run_pipeline.py --full
 | `--epochs` | 10 | Number of training epochs |
 | `--full` | off | Use the entire dataset for each split instead of subsampling |
 
+## Next Steps
+
+Concrete, already-scoped work remaining:
+
+- **Full-scale eval-set fairness audit** — the per-speaker MAD audit on unseen attack types (A07–A19) is implemented and runs automatically, but hasn't yet been executed at the same scale as the headline EER result (1000 train / 10 epochs / 5000 eval); the Demographic Bias Audit section above will be updated with that real number once it has.
+- **Full-dataset run** — validate results against the complete ASVspoof2019 LA corpus via `--full`, rather than the current subsampled configuration, for a fully rigorous, directly paper-comparable benchmark number.
+
 ## Future Improvements
 
-Potential improvements to reduce overall error and demographic disparity:
+Longer-term research directions to reduce overall error and demographic disparity:
 
 - **InfoNCE Contrastive Realignment** — separate speaker identity from synthetic artifacts using contrastive training
 - **Learnable Layer Selection Weighting** — replace fixed layer selection with trainable attention over XLS-R hidden states

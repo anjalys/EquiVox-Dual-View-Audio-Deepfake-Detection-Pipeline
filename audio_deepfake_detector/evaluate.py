@@ -122,3 +122,43 @@ def run_forensic_and_fairness_audit(val_dataset, whisper_view, xlsr_view, ensemb
 
         print(f"\nDemographic Bias Disparity Score (MAD): {mad_score:.4f}")
         print("Note: An optimized, equitable detector targets a MAD score approaching 0.00.")
+
+
+def run_eval_fairness_audit(results_df):
+    """
+    Speaker-level fairness audit on the eval split's unseen attack types (A07-A19).
+
+    Unlike run_forensic_and_fairness_audit (dev set, known attack types A01-A06,
+    where the detector trivially fits and every speaker cohort trends toward
+    EER 0.0 regardless of fairness), this reads scores already computed during
+    the Phase 3 inference pass -- no extra forward pass over the model -- so the
+    resulting per-speaker EER and MAD reflect genuine generalization performance.
+    """
+    print("\n--- FairVoice Demographic Equity Audit (Eval / Unseen Attacks) ---")
+    labels = results_df['true_label'].map({'spoof': 1, 'bonafide': 0}).to_numpy()
+    scores = results_df['confidence_spoof'].to_numpy()
+    speakers = results_df['speaker'].to_numpy()
+
+    speaker_eers = {}
+    for speaker in sorted(set(speakers)):
+        mask = speakers == speaker
+        speaker_labels = labels[mask]
+        speaker_scores = scores[mask]
+
+        if len(np.unique(speaker_labels)) > 1:
+            eer_val = calculate_eer(speaker_labels, speaker_scores)
+            speaker_eers[speaker] = eer_val
+            print(f"Equal Error Rate (EER) within Speaker Cohort [{speaker}]: {eer_val:.4f}")
+        else:
+            print(f"Skipping Speaker Identity [{speaker}]: Cohort lacks balanced bona-fide/spoof distributions.")
+
+    if speaker_eers:
+        eer_values = list(speaker_eers.values())
+        mean_eer = np.mean(eer_values)
+        mad_score = np.mean(np.absolute(np.array(eer_values) - mean_eer))
+
+        print(f"\nDemographic Bias Disparity Score (MAD, eval/unseen attacks): {mad_score:.4f}")
+        print("Note: An optimized, equitable detector targets a MAD score approaching 0.00.")
+        return mad_score
+
+    return np.nan

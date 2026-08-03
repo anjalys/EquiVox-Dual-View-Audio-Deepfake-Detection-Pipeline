@@ -9,7 +9,7 @@ from dataset import DeepfakeAudioDataset
 from config import Config
 
 from train import train_system
-from evaluate import run_forensic_and_fairness_audit, calculate_eer
+from evaluate import run_forensic_and_fairness_audit, run_eval_fairness_audit, calculate_eer
 
 # =========================
 # CONFIG
@@ -223,3 +223,7 @@ if __name__ == "__main__":
     eval_eer = calculate_eer(eval_labels, eval_scores)
     eval_eer_str = f"{eval_eer:.4f}" if not np.isnan(eval_eer) else "N/A (single class in sample)"
     print(f"\n=== EVAL SYSTEM EER (unseen attack types): {eval_eer_str} ===")
+
+    # 8. Speaker-level fairness audit on the same eval/unseen-attack results --
+    #    reuses results_df from step 6, no extra inference pass needed.
+    run_eval_fairness_audit(results_df)
