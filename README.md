@@ -110,23 +110,7 @@ The DataShare bitstream URL does not support scripted downloads — it returns a
 python3 run_pipeline.py --full --epochs 5
 ```
 
-This trains on the full dataset and reproduces the results above. For faster iteration during development, sample sizes and epoch count are configurable:
-
-```bash
-# quick smoke test
-python3 run_pipeline.py --train-n 200 --dev-n 20 --eval-n 5 --epochs 1
-
-# custom sample sizes
-python3 run_pipeline.py --train-n 1000 --dev-n 500 --eval-n 5000 --epochs 10
-```
-
-| Flag | Default | Description |
-|---|---|---|
-| `--train-n` | 1000 | Number of training files to sample |
-| `--dev-n` | 500 | Number of dev files to sample |
-| `--eval-n` | 5000 | Number of eval files to sample |
-| `--epochs` | 10 | Number of training epochs |
-| `--full` | off | Use the entire dataset for each split instead of subsampling |
+Trains on the full ASVspoof2019 LA corpus and reproduces the results above.
 
 ## Future Improvements
 
@@ -136,7 +120,6 @@ Longer-term research directions to reduce overall error and demographic disparit
 - **Learnable Layer Selection Weighting** — replace fixed layer selection with trainable attention over XLS-R hidden states
 - **Spectro-Temporal Graph Integration** — add a signal-level graph model to complement foundation representations
 - **Per-Group Decision Thresholds** — adjust classification thresholds separately per demographic group, shown in recent literature to reduce fairness gaps significantly at no cost to overall accuracy
-- **Cross-Dataset Evaluation** — validate on additional real-world sources (e.g. In-the-Wild) to test generalization beyond the clean, studio-quality conditions of ASVspoof
 
 ## Related Work
 
