@@ -4,7 +4,7 @@ An end-to-end audio deepfake detection pipeline for TTS and voice-cloning attack
 
 ## Overview
 
-Audio deepfake detectors are typically evaluated on a single overall accuracy number, which can hide meaningful differences in how well they actually perform across different speakers. A detector that looks strong on average could still be quietly unreliable for specific individuals — a real risk in any biometric security system.
+Voice deepfakes are increasingly used for scam calls and biometric fraud. Audio deepfake detectors are typically evaluated on a single overall accuracy number, which can hide meaningful differences in how well they actually perform across different speakers. A detector that looks strong on average could still be quietly unreliable for specific individuals — a real risk in any biometric security system.
 
 This project addresses that by pairing dual-view detection with an explicit per-speaker fairness audit, rather than assuming a good average result means uniformly good protection:
 
