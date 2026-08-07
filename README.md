@@ -112,15 +112,6 @@ python3 run_pipeline.py --full --epochs 5
 
 Trains on the full ASVspoof2019 LA corpus and reproduces the results above.
 
-## Future Improvements
-
-Longer-term research directions to reduce overall error and demographic disparity:
-
-- **InfoNCE Contrastive Realignment** — separate speaker identity from synthetic artifacts using contrastive training
-- **Learnable Layer Selection Weighting** — replace fixed layer selection with trainable attention over XLS-R hidden states
-- **Spectro-Temporal Graph Integration** — add a signal-level graph model to complement foundation representations
-- **Per-Group Decision Thresholds** — adjust classification thresholds separately per demographic group, shown in recent literature to reduce fairness gaps significantly at no cost to overall accuracy
-
 ## Related Work
 
 This project builds on established techniques from the audio anti-spoofing literature rather than introducing novel architecture:
