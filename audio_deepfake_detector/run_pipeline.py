@@ -151,7 +151,7 @@ def run_pipeline_inference(df, audio_dir, inference_engine):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run the EquiVox dual-view deepfake detection pipeline")
+    parser = argparse.ArgumentParser(description="Run the FairVoice dual-view deepfake detection pipeline")
     parser.add_argument("--train-n", type=int, default=1000, help="Number of training files to sample")
     parser.add_argument("--dev-n", type=int, default=500, help="Number of dev files to sample")
     parser.add_argument("--eval-n", type=int, default=5000, help="Number of eval files to sample")

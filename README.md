@@ -1,4 +1,4 @@
-# EquiVox: Dual-View Audio Deepfake Detection with Speaker Fairness Auditing
+# FairVoice: Dual-View Audio Deepfake Detection with Speaker Equity Auditing
 
 An end-to-end audio deepfake detection pipeline for TTS and voice-cloning attacks. It combines semantic and structural feature extractors with an ensemble classifier, and includes a per-speaker fairness audit to check whether detection accuracy holds up equally across different voices, not just on average.
 
